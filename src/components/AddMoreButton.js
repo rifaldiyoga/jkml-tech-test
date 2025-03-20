@@ -11,7 +11,7 @@ const AddMoreButton = ({onAddMore}) => {
 			<GradientView
 				colors={['#89f7fe', '#66a6ff']}
 				style={styles.addMoreGradient}>
-				<Text style={styles.addMoreButtonText}>Add more data</Text>
+				<Text style={styles.addMoreButtonText}>Load More</Text>
 			</GradientView>
 		</TouchableOpacity>
 	);

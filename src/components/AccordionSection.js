@@ -3,7 +3,15 @@ import {Animated, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import ContentSection from './ContentSection';
 import GoTopButton from './GoTopButton';
 
-const AccordionSection = ({index, data, onToggle, moveToTop, onAddMore}) => {
+const AccordionSection = ({
+	index,
+	data,
+	onToggle,
+	moveToTop,
+	onAddMore,
+	isChildLoading,
+	childKey,
+}) => {
 	const arrowRotation = !data.isExpanded ? '0deg' : '180deg';
 
 	return (
@@ -31,7 +39,13 @@ const AccordionSection = ({index, data, onToggle, moveToTop, onAddMore}) => {
 			</TouchableOpacity>
 			{data.isExpanded ? (
 				<Animated.View style={[styles.contentContainerWrapper]}>
-					<ContentSection data={data} onAddMore={onAddMore} />
+					<ContentSection
+						data={data}
+						onAddMore={onAddMore}
+						isChildLoading={isChildLoading}
+						childKey={childKey}
+						key={data.key}
+					/>
 				</Animated.View>
 			) : (
 				<></>

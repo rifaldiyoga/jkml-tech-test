@@ -6,8 +6,16 @@ const listReducer = (state, action) => {
 		case 'isloading':
 			return {...state, isLoading: action.payload};
 		case 'fetch':
-			return {...state, list: action.payload, isLoading: false};
-		case 'add_child_data':
+			return {...state, list: action.payload, isLoading: false, error: ''};
+		case 'fetch_error':
+			return {...state, error: action.payload, isLoading: false};
+		case 'start_add_child_data':
+			return {
+				...state,
+				isChildLoading: true,
+				key: action.payload,
+			};
+		case 'success_add_child_data':
 			return {
 				...state,
 				list: state.list.map(item =>
@@ -15,6 +23,15 @@ const listReducer = (state, action) => {
 						? {...item, values: [...item.values, ...action.payload.values]}
 						: item,
 				),
+				isChildLoading: false,
+				key: null,
+			};
+		case 'error_add_child_data':
+			alert(action.payload);
+			return {
+				...state,
+				isChildLoading: false,
+				key: null,
 			};
 
 		case 'move_first':
@@ -36,10 +53,6 @@ const listReducer = (state, action) => {
 	}
 };
 
-const setIsLoading = (dispatch, value) => {
-	dispatch({type: 'isloading', payload: value});
-};
-
 const moveItemToFirst = (list, key) => {
 	const index = list.findIndex(item => item.key === key);
 
@@ -53,23 +66,39 @@ const moveItemToFirst = (list, key) => {
 };
 
 const fetchData = dispatch => async () => {
-	const response = await defaultApi.get('/categories');
-	console.log(response);
-	const map = response.data.categories.map((item, index) => ({
-		id: index + 1,
-		key: item,
-		values: [],
-		isExpanded: false,
-	}));
-	dispatch({type: 'fetch', payload: map});
+	try {
+		const response = await defaultApi.get('/categories');
+		const map = response.data.categories.map((item, index) => ({
+			id: index + 1,
+			key: item,
+			values: [],
+			isExpanded: false,
+		}));
+		dispatch({type: 'fetch', payload: map});
+	} catch (error) {
+		dispatch({
+			type: 'fetch_error',
+			payload: 'Failed to fetch categories',
+		});
+	}
 };
 
 const addMoreChildData = dispatch => async key => {
-	const response = await defaultApi.get(
-		'/joke/' + key + '?type=single&amount=2',
-	);
-	const data = response.data.jokes.map(item => item.joke);
-	return dispatch({type: 'add_child_data', payload: {key: key, values: data}});
+	dispatch({type: 'start_add_child_data', payload: key});
+	try {
+		const response = await defaultApi.get(`/joke/${key}?type=single&amount=2`);
+		const data = response.data.jokes.map(item => item.joke);
+
+		dispatch({
+			type: 'success_add_child_data',
+			payload: {key: key, values: data},
+		});
+	} catch (error) {
+		dispatch({
+			type: 'error_add_child_data',
+			payload: 'Failed to load data ' + key,
+		});
+	}
 };
 
 const moveToTop = dispatch => async key => {
@@ -88,5 +117,5 @@ export const {Context, Provider} = createDataContext(
 		moveToTop,
 		setExpand,
 	},
-	{list: [], isLoading: true},
+	{list: [], isLoading: true, error: '', isChildLoading: false, key: ''},
 );

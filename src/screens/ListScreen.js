@@ -4,15 +4,17 @@ import {
 	SafeAreaView,
 	ScrollView,
 	StyleSheet,
+	Text,
 } from 'react-native';
 import AccordionSection from '../components/AccordionSection';
 import GradientView from '../components/GradientView';
 import {Context as ListContext} from '../context/ListContext';
+import ErrorView from '../components/ErrorView';
 
 const ListScreen = () => {
 	const {state, fetchData, addMoreChildData, moveToTop, setExpand} =
 		useContext(ListContext);
-	const {list, isLoading} = state;
+	const {list, isLoading, error, isChildLoading, key} = state;
 
 	useEffect(() => {
 		console.log('useEffect triggered');
@@ -35,6 +37,13 @@ const ListScreen = () => {
 						titleColor={'#555'}
 					/>
 				}>
+				<Text style={styles.appTitle}>My Application</Text>
+
+				{/* Error View */}
+				{error ? (
+					<ErrorView message={error} onRetry={() => fetchData()} />
+				) : null}
+
 				{list.map((data, index) => (
 					<AccordionSection
 						key={data.key}
@@ -43,6 +52,8 @@ const ListScreen = () => {
 						onToggle={() => setExpand(data.key)}
 						moveToTop={() => moveToTop(data.key)}
 						onAddMore={addMoreChildData}
+						isChildLoading={isChildLoading}
+						childKey={key}
 					/>
 				))}
 			</ScrollView>
